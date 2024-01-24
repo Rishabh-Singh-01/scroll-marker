@@ -3,7 +3,7 @@
   "name": "Scroll Memo",
   "description": "Bookmark different particular scroll points in a webpage",
   "version": "0.0.1",
-  "permissions": ["activeTab", "scripting"],
+  "permissions": ["activeTab", "scripting", "storage"],
   "host_permissions": ["https://*/*", "http://*/*"],
   "background": {
     "service_worker": "src/service-worker.js"
