@@ -1,9 +1,4 @@
-/**
- *
- * @param {string} url url of the current active tab
- * @returns {{display:boolean,markers:number[]}} info about the current tab
- */
-async function getCurrentTabInfo(url) {
+async function getCurrentTabInfoHelper(url) {
   return new Promise((resolve, reject) => {
     console.log(chrome.storage.local);
     const key = [url];
@@ -26,6 +21,21 @@ async function getCurrentTabInfo(url) {
       }
     });
   });
+}
+
+/**
+ *
+ * @param {string} url url of the current active tab
+ * @returns {{display:boolean,markers:number[]}} info about the current tab
+ */
+async function getCurrentTabInfo(url) {
+  let prevVal = await getCurrentTabInfoHelper(url);
+  if (!prevVal)
+    prevVal = {
+      display: false,
+      markers: [],
+    };
+  return new Promise((resolve) => resolve(prevVal));
 }
 
 /**
@@ -93,11 +103,6 @@ async function addNumToMarkerMutate(pos, prevVal) {
  */
 async function saveMarker(url, pos) {
   let prevVal = await getCurrentTabInfo(url);
-  if (!prevVal)
-    prevVal = {
-      display: false,
-      markers: [],
-    };
   console.log(prevVal);
   const newMarkers = await addNumToMarkerMutate(pos, prevVal);
   await setCurrentTabInfo(url, prevVal.display, newMarkers);
