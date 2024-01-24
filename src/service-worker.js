@@ -1,4 +1,13 @@
-chrome.runtime.onMessage.addListener(async (request, sender, reply) => {
+async function saveMarker(url, pos) {
+  await chrome.storage.local.set({
+    [url]: pos,
+  });
+  const val = await chrome.storage.local.get([url]);
+  console.log(val[url]);
+  return val[url];
+}
+
+chrome.runtime.onMessage.addListener((request, sender, reply) => {
   console.log(request);
   console.log(sender);
   if (request.messageType === 'getTab') {
@@ -9,22 +18,16 @@ chrome.runtime.onMessage.addListener(async (request, sender, reply) => {
       },
     });
   } else if (request.messageType === 'saveMarker') {
-    const { url, pos } = request.data;
-    try {
-      await chrome.storage.local.set({
-        url: 'one',
-      });
-    } catch (e) {
-      console.error(e);
-    }
-    const val = await chrome.storage.local.get(['url']);
-    console.log(val.url);
-    reply({
-      status: 'success',
-      data: {
-        value: val.url,
-      },
-    });
+    const { pos } = request.data;
+    const { url } = sender.tab;
+    saveMarker(url, pos).then((res) =>
+      reply({
+        status: 'success',
+        data: {
+          value: res,
+        },
+      })
+    );
   }
   return true;
 });

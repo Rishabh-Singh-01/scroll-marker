@@ -5,7 +5,7 @@ async function getCurrentTab() {
   return res.data.tab;
 }
 
-async function saveMarker(data) {
+async function saveMessage(data) {
   const res = await chrome.runtime.sendMessage({
     messageType: 'saveMarker',
     data,
@@ -14,14 +14,11 @@ async function saveMarker(data) {
 }
 
 (async function () {
-  const { url } = await getCurrentTab();
   const curScrollPosnY = window.scrollY;
   const data = {
-    url,
     pos: curScrollPosnY,
   };
-  const res = await saveMarker(data);
-  console.log(url);
+  const res = await saveMessage(data);
   console.log(window.scrollY);
   console.log(res.value);
 })();
