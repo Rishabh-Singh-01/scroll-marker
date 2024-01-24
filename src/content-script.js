@@ -18,7 +18,5 @@ async function saveMessage(data) {
   const data = {
     pos: curScrollPosnY,
   };
-  const res = await saveMessage(data);
-  console.log(window.scrollY);
-  console.log(res.value);
+  await saveMessage(data);
 })();
