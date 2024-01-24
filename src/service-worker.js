@@ -100,6 +100,11 @@ async function saveMarker(url, pos) {
   await setCurrentTabInfo(url, prevVal.display, newMarkers);
 }
 
+async function getMarkerInfo(url) {
+  const info = await getCurrentTabInfo(url);
+  return info;
+}
+
 chrome.runtime.onMessage.addListener((request, sender, reply) => {
   if (request.messageType === 'getTab') {
     reply({
@@ -123,6 +128,39 @@ chrome.runtime.onMessage.addListener((request, sender, reply) => {
           error: err,
         })
       );
+  } else if (request.messageType === 'getMarkerInfo') {
+    const { url } = request.data;
+    getMarkerInfo(url)
+      .then((data) =>
+        reply({
+          status: 'success',
+          data,
+        })
+      )
+      .catch((err) =>
+        reply({
+          status: 'fail',
+          error: err,
+        })
+      );
   }
   return true;
+});
+
+async function sendMessage(type, data) {
+  const res = await chrome.runtime.sendMessage({
+    messageType: type,
+    data,
+  });
+  return res;
+}
+
+chrome.storage.onChanged.addListener((changes, area) => {
+  console.log(changes);
+  console.log(area);
+  if (area !== 'local') return;
+
+  sendMessage('onChangedStorage', changes)
+    .then((res) => console.log(res))
+    .catch((err) => console.error(err));
 });
