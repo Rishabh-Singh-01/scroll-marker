@@ -21,6 +21,7 @@ async function renderPopup(url) {
 }
 
 const saveButtonEl = document.getElementById('saveButton');
+const showMarkerBtnEl = document.getElementById('showMarkersBtn');
 
 async function saveBtnOnClickHandler() {
   const tab = await Tab.getCurrentTab();
@@ -37,6 +38,15 @@ async function saveBtnOnClickHandler() {
   }
 }
 saveButtonEl.addEventListener('click', (e) => saveBtnOnClickHandler());
+
+async function showMarkerBtnOnClickHandler() {
+  const tab = await Tab.getCurrentTab();
+  const url = tab.url;
+  renderPopup(url)
+    .then(() => reply({ status: 'ok' }))
+    .catch((err) => console.error(err));
+}
+showMarkerBtnEl.addEventListener('click', () => showMarkerBtnOnClickHandler());
 
 async function updatePopup({ data }) {
   if (Object.keys(data).length !== 1) {
