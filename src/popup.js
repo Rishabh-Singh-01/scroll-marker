@@ -1,6 +1,10 @@
 import { Tab } from './tab.js';
 
-async function renderPopup(url) {
+function scrollTo(pos) {
+  window.scrollTo(0, parseInt(pos));
+}
+
+async function renderPopup(url, id) {
   const markerEl = document.getElementById('markers');
   const tabMarkerInfo = await chrome.runtime.sendMessage({
     messageType: 'getMarkerInfo',
@@ -15,6 +19,19 @@ async function renderPopup(url) {
     const btnNo = i + 1;
     const btn = document.createElement('button');
     btn.innerHTML = `Marker ${btnNo}`;
+    btn.setAttribute('data-scroll', markersArr[i]);
+    btn.addEventListener('click', (e) => {
+      chrome.scripting.executeScript(
+        {
+          target: {
+            tabId: id,
+          },
+          func: scrollTo,
+          args: [markersArr[i]],
+        },
+        () => console.log('scrolled')
+      );
+    });
     markersElArr.push(btn);
   }
   markerEl.replaceChildren(...markersElArr);
@@ -41,10 +58,11 @@ saveButtonEl.addEventListener('click', (e) => saveBtnOnClickHandler());
 
 async function showMarkerBtnOnClickHandler() {
   const tab = await Tab.getCurrentTab();
+  const id = tab.id;
   const url = tab.url;
-  renderPopup(url)
-    .then(() => reply({ status: 'ok' }))
-    .catch((err) => console.error(err));
+  renderPopup(url, id);
+  // .then(() => reply({ status: 'ok' }))
+  // .catch((err) => console.error(err));
 }
 showMarkerBtnEl.addEventListener('click', () => showMarkerBtnOnClickHandler());
 
@@ -55,7 +73,8 @@ async function updatePopup({ data }) {
   }
 
   const url = Object.keys(data)[0];
-  await renderPopup(url);
+  const tab = await Tab.getCurrentTab();
+  await renderPopup(url, tab.id);
 }
 
 chrome.runtime.onMessage.addListener((request, sender, reply) => {
