@@ -3,6 +3,9 @@
   "name": "Scroll Memo",
   "description": "Bookmark different particular scroll points in a webpage",
   "version": "0.0.1",
+  "icons": {
+    "128": "public/icon-128.png"
+  },
   "permissions": ["activeTab", "scripting", "storage"],
   "host_permissions": ["https://*/*", "http://*/*"],
   "background": {

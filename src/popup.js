@@ -1,11 +1,14 @@
 import { Tab } from './tab.js';
 
+const saveMarkerButtonEl = document.getElementById('save-marker-button');
+const showMarkerBtnEl = document.getElementById('show-markers-button');
+
 function scrollTo(pos) {
   window.scrollTo(0, parseInt(pos));
 }
 
 async function renderPopup(url, id) {
-  const markerEl = document.getElementById('markers');
+  const markerEl = document.getElementById('markers-container');
   const tabMarkerInfo = await chrome.runtime.sendMessage({
     messageType: 'getMarkerInfo',
     data: {
@@ -18,9 +21,10 @@ async function renderPopup(url, id) {
   for (let i = 0; i < markersArr.length; i++) {
     const btnNo = i + 1;
     const btn = document.createElement('button');
+    btn.classList.add('marker-button');
     btn.innerHTML = `Marker ${btnNo}`;
     btn.setAttribute('data-scroll', markersArr[i]);
-    btn.addEventListener('click', (e) => {
+    btn.addEventListener('click', () => {
       chrome.scripting.executeScript(
         {
           target: {
@@ -34,11 +38,14 @@ async function renderPopup(url, id) {
     });
     markersElArr.push(btn);
   }
+  if (!markersElArr.length) {
+    const noMarkerFoundEl = document.createElement('div');
+    noMarkerFoundEl.innerText = 'No Marker Found';
+    noMarkerFoundEl.classList.add('no-marker');
+    markersElArr.push(noMarkerFoundEl);
+  }
   markerEl.replaceChildren(...markersElArr);
 }
-
-const saveButtonEl = document.getElementById('saveButton');
-const showMarkerBtnEl = document.getElementById('showMarkersBtn');
 
 async function saveBtnOnClickHandler() {
   const tab = await Tab.getCurrentTab();
@@ -54,15 +61,13 @@ async function saveBtnOnClickHandler() {
     console.error(`failed to execute script: ${err}`);
   }
 }
-saveButtonEl.addEventListener('click', (e) => saveBtnOnClickHandler());
+saveMarkerButtonEl.addEventListener('click', (e) => saveBtnOnClickHandler());
 
 async function showMarkerBtnOnClickHandler() {
   const tab = await Tab.getCurrentTab();
   const id = tab.id;
   const url = tab.url;
   renderPopup(url, id);
-  // .then(() => reply({ status: 'ok' }))
-  // .catch((err) => console.error(err));
 }
 showMarkerBtnEl.addEventListener('click', () => showMarkerBtnOnClickHandler());
 

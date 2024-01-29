@@ -4,14 +4,17 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Document</title>
+    <link type="text/css" rel="stylesheet" href="styles.css" />
   </head>
   <body>
     <div id="root">
-      <div id="buttons">
-        <button id="saveButton">Save the view</button>
-        <button id="showMarkersBtn">Show the markers</button>
+      <div id="main-container">
+        <button id="save-marker-button" class="save-marker-button">Mark</button>
+        <button id="show-markers-button" class="show-markers-button">
+          <img src="../public/down.png" />
+        </button>
       </div>
-      <div id="markers"></div>
+      <div id="markers-container" class="markers-container"></div>
     </div>
     <script src="popup.js" type="module"></script>
     <script src="script.js" type="module"></script>
