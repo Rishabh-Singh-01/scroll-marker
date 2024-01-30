@@ -9,7 +9,8 @@
   "permissions": ["activeTab", "scripting", "storage"],
   "host_permissions": ["https://*/*", "http://*/*"],
   "background": {
-    "service_worker": "src/service-worker.js"
+    "service_worker": "src/service-worker.js",
+    "type": "module"
   },
   "action": {
     "default_popup": "src/index.html"

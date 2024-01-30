@@ -1,9 +1,9 @@
-async function getCurrentTab() {
-  const res = await chrome.runtime.sendMessage({
-    messageType: 'getTab',
-  });
-  return res.data.tab;
-}
+// async function getCurrentTab() {
+//   const res = await chrome.runtime.sendMessage({
+//     messageType: 'getTab',
+//   });
+//   return res.data.tab;
+// }
 
 async function saveMessage(data) {
   const res = await chrome.runtime.sendMessage({
@@ -18,5 +18,6 @@ async function saveMessage(data) {
   const data = {
     pos: curScrollPosnY,
   };
-  await saveMessage(data);
+  debugger;
+  return await saveMessage(data);
 })();
