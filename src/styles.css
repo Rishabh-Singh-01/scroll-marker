@@ -34,8 +34,29 @@ body {
   align-items: stretch;
 }
 
-.marker-button:first-child {
+.marker-btn-container {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+}
+
+.marker-btn-container:first-child {
   margin-top: 20px;
+}
+
+.delete-marker-button {
+  padding: 6px;
+  color: red;
+  border-radius: 50%;
+  border: 1px solid rgba(27, 31, 35, 0.15);
+  box-shadow: rgba(27, 31, 35, 0.1) 0 1px 0;
+  transition: background-color 0.2s cubic-bezier(0.3, 0, 0.5, 1);
+}
+.delete-marker-button:hover {
+  cursor: pointer;
+  background-color: #f3f4f6;
+  transition-duration: 0.1s;
 }
 
 .no-marker {
@@ -46,6 +67,12 @@ body {
   padding: 6px 16px 0 16px;
   display: inline-block;
   align-items: center;
+}
+.marker-button {
+  width: 100%;
+}
+.show-marker-button {
+  transform: translateY(2px);
 }
 
 /* CSS From the internet */
@@ -102,6 +129,7 @@ body {
 }
 
 .marker-button,
+.clear-button,
 .show-markers-button {
   appearance: none;
   background-color: #fafbfc;
@@ -109,7 +137,6 @@ body {
   border-radius: 6px;
   box-shadow: rgba(27, 31, 35, 0.04) 0 1px 0,
     rgba(255, 255, 255, 0.25) 0 1px 0 inset;
-  box-sizing: border-box;
   color: #24292e;
   cursor: pointer;
   display: inline-block;
@@ -130,13 +157,16 @@ body {
   word-wrap: break-word;
 }
 
-.marker-button:hover .show-marker-button:hover {
+.marker-button:hover,
+.clear-button:hover,
+.show-marker-button:hover {
   background-color: #f3f4f6;
   text-decoration: none;
   transition-duration: 0.1s;
 }
 
 .marker-button:disabled,
+.clear-button:disabled,
 .show-marker-button:disabled {
   background-color: #fafbfc;
   border-color: rgba(27, 31, 35, 0.15);
@@ -145,6 +175,7 @@ body {
 }
 
 .marker-button:active,
+.clear-button:active,
 .show-marker-button:active {
   background-color: #edeff2;
   box-shadow: rgba(225, 228, 232, 0.2) 0 1px 0 inset;
@@ -152,11 +183,13 @@ body {
 }
 
 .marker-button:focus,
+.clear-button:focus,
 .show-marker-button:focus {
   outline: 1px transparent;
 }
 
 .marker-button:before,
+.clear-button::before,
 .show-marker-button:before {
   display: none;
 }
@@ -166,6 +199,9 @@ body {
   padding-bottom: 5px;
 }
 
-img {
-  transform: translateY(2px);
+/* Changing some extra styling */
+
+.clear-button {
+  color: #fa5252;
+  margin-top: 20px;
 }

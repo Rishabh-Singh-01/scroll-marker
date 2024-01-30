@@ -105,6 +105,29 @@ async function getMarkerInfo(url) {
   return info;
 }
 
+async function deleteMarker(url, scrollPos) {
+  const info = await getCurrentTabInfo(url);
+  if (!info.markers.length)
+    return new Promise((_, reject) =>
+      reject('No marker found when deleting marker')
+    );
+  if (!info.markers.includes(scrollPos))
+    return new Promise((_, reject) =>
+      reject('No marker with this view is found when deleting marker')
+    );
+
+  const updatedMarkersArr = info.markers.filter(
+    (marker) => marker !== scrollPos
+  );
+
+  await setCurrentTabInfo(url, false, updatedMarkersArr);
+  return new Promise((resolve) => resolve('Marker deleted successfully'));
+}
+
+async function clearAllMarkers(url) {
+  chrome.storage.local.remove(url);
+}
+
 chrome.runtime.onMessage.addListener((request, sender, reply) => {
   if (request.messageType === 'getTab') {
     reply({
@@ -131,6 +154,36 @@ chrome.runtime.onMessage.addListener((request, sender, reply) => {
   } else if (request.messageType === 'getMarkerInfo') {
     const { url } = request.data;
     getMarkerInfo(url)
+      .then((data) =>
+        reply({
+          status: 'success',
+          data,
+        })
+      )
+      .catch((err) =>
+        reply({
+          status: 'fail',
+          error: err,
+        })
+      );
+  } else if (request.messageType === 'deleteMarker') {
+    const { url, scrollPos } = request.data;
+    deleteMarker(url, scrollPos)
+      .then((data) =>
+        reply({
+          status: 'success',
+          data,
+        })
+      )
+      .catch((err) =>
+        reply({
+          status: 'fail',
+          error: err,
+        })
+      );
+  } else if (request.messageType === 'clearMarkers') {
+    const { url } = request.data;
+    clearAllMarkers(url)
       .then((data) =>
         reply({
           status: 'success',
