@@ -17,7 +17,7 @@ async function saveBtnOnClickHandler() {
     files: ['src/content-scripts/save-message.js'],
   });
 }
-saveMarkerButtonEl.addEventListener('click', (e) => saveBtnOnClickHandler());
+saveMarkerButtonEl.addEventListener('click', () => saveBtnOnClickHandler());
 
 chrome.runtime.onMessage.addListener((request, sender, reply) => {
   if (request.messageType === Events.onChangedStorage) {

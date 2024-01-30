@@ -22,19 +22,17 @@ export class Marker {
     return new Promise((resolve) => {
       const markers = prevVal.markers;
       const markersLen = markers.length;
-      if (!markersLen) {
-        const arr = [];
-        arr.push(pos);
-        resolve(arr);
-        return;
-      }
-      if (pos > markers[markersLen - 1]) {
+      if (!markersLen || pos > markers[markersLen - 1]) {
         markers.push(pos);
         resolve(markers);
         return;
       }
       if (pos < markers[0]) {
         markers.unshift(pos);
+        resolve(markers);
+        return;
+      }
+      if (pos === markers[0]) {
         resolve(markers);
         return;
       }
@@ -65,7 +63,7 @@ export class Marker {
       prevVal = {
         markers: [],
       };
-    return new Promise((resolve) => resolve(prevVal));
+    return Promise.resolve(prevVal);
   }
 
   /**
@@ -76,18 +74,16 @@ export class Marker {
   static async save(url, pos) {
     let prevVal = await this.get(url);
     const newMarkers = await this.#addNumToMarkerMutate(pos, prevVal);
-    await this.#set(url, newMarkers);
+    return this.#set(url, newMarkers);
   }
 
   static async delete(url, scrollPos) {
     const info = await this.get(url);
     if (!info.markers.length)
-      return new Promise((_, reject) =>
-        reject('No marker found when deleting marker')
-      );
+      return Promise.reject('No marker found when deleting marker');
     if (!info.markers.includes(scrollPos))
-      return new Promise((_, reject) =>
-        reject('No marker with this view is found when deleting marker')
+      return Promise.reject(
+        'No marker with this view is found when deleting marker'
       );
 
     const updatedMarkersArr = info.markers.filter(
@@ -95,7 +91,6 @@ export class Marker {
     );
 
     return this.#set(url, updatedMarkersArr);
-    // return new Promise((resolve) => resolve('Marker deleted successfully'));
   }
 
   static async clearAll(url) {
