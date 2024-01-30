@@ -6,4 +6,16 @@ export class Events {
   static get saveMarker() {
     return 'saveMarker';
   }
+
+  static get getMarkers() {
+    return 'getMarkers';
+  }
+
+  static get deleteMarker() {
+    return 'deleteMarker';
+  }
+
+  static get clearMarkers() {
+    return 'clearMarkers';
+  }
 }

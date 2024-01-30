@@ -12,7 +12,23 @@ export class Action {
     return tab;
   }
 
+  /**
+   * @param {string} url url of the current active tab
+   * @returns {{display:boolean,markers:number[]} | undefined} info about the current tab
+   */
   static async getFromStorage(key) {
-    return chrome.storage.local.get([key]);
+    const k = [key];
+    const item = await chrome.storage.local.get(k);
+    return item[key];
+  }
+
+  static async setInStorage(url, data) {
+    return chrome.storage.local.set({
+      [url]: data,
+    });
+  }
+
+  static async clearFromStorage(key) {
+    return chrome.storage.local.remove(key);
   }
 }

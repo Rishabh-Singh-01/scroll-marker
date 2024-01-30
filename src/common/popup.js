@@ -1,3 +1,4 @@
+import { Events } from '../utils/events.js';
 import { Action } from './action.js';
 
 function scrollTo(pos) {
@@ -11,7 +12,7 @@ export class Popup {
   static async #renderDropdown(url, id) {
     const markerEl = document.getElementById('markers-container');
     const tabMarkerInfo = await chrome.runtime.sendMessage({
-      messageType: 'getMarkerInfo',
+      messageType: Events.getMarkers,
       data: {
         url,
       },
@@ -46,7 +47,7 @@ export class Popup {
       deleteBtnEl.addEventListener('click', () => {
         chrome.runtime
           .sendMessage({
-            messageType: 'deleteMarker',
+            messageType: Events.deleteMarker,
             data: {
               url,
               scrollPos: markersArr[i],
@@ -78,7 +79,7 @@ export class Popup {
       clearBtn.addEventListener('click', () => {
         chrome.runtime
           .sendMessage({
-            messageType: 'clearMarkers',
+            messageType: Events.clearMarkers,
             data: {
               url,
             },

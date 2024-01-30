@@ -1,219 +1,84 @@
-/**
- *
- * @param {string} url url of the current active tab
- * @returns {{display:boolean,markers:number[]} | undefined} info about the current tab
- */
-async function getCurrentTabInfoHelper(url) {
-  return new Promise((resolve, reject) => {
-    const key = [url];
-    chrome.storage.local.get(key, function (item) {
-      if (chrome.runtime.lastError) {
-        reject(chrome.runtime.lastError.message);
-      } else {
-        resolve(item[url]);
-      }
-    });
-  });
-}
-
-/**
- *
- * @param {string} url url of the current active tab
- * @returns {{display:boolean,markers:number[]}} info about the current tab
- */
-async function getCurrentTabInfo(url) {
-  let prevVal = await getCurrentTabInfoHelper(url);
-  if (!prevVal)
-    prevVal = {
-      display: false,
-      markers: [],
-    };
-  return new Promise((resolve) => resolve(prevVal));
-}
-
-/**
- *
- * @param {string} url url of the current active tab
- * @param {boolean} display indicates whether the current info page is displayed or not
- * @param {number[]} markers array to set
- */
-async function setCurrentTabInfo(url, display, markers) {
-  await chrome.storage.local.set({
-    [url]: {
-      display,
-      markers,
-    },
-  });
-}
-
-/**
- *
- * @param {number} pos position to add to array in ascending order
- * @param {number[]} markers array in which position is going to get added
- * @returns array with poition added in ascending order, empty in case somthing went wrong
- */
-async function addNumToMarkerMutate(pos, prevVal) {
-  return new Promise((resolve) => {
-    const markers = prevVal.markers;
-    const markersLen = markers.length;
-    if (!markersLen) {
-      const arr = [];
-      arr.push(pos);
-      resolve(arr);
-      return;
-    }
-    if (pos > markers[markersLen - 1]) {
-      markers.push(pos);
-      resolve(markers);
-      return;
-    }
-    if (pos < markers[0]) {
-      markers.unshift(pos);
-      resolve(markers);
-      return;
-    }
-    for (let i = 0; i < markersLen - 1; i++) {
-      if (pos === markers[i] || pos === markers[i + 1]) {
-        resolve(markers);
-        return;
-      }
-      if (pos > markers[i] && pos < markers[i + 1]) {
-        markers.splice(i + 1, 0, pos);
-        resolve(markers);
-        return;
-      }
-    }
-    resolve([]);
-    return;
-  });
-}
-
-/**
- *
- * @param {url} url url of the current active tab
- * @param {pos} pos total pixels scrolled from the top
- * @returns
- */
-async function saveMarker(url, pos) {
-  let prevVal = await getCurrentTabInfo(url);
-  const newMarkers = await addNumToMarkerMutate(pos, prevVal);
-  await setCurrentTabInfo(url, prevVal.display, newMarkers);
-}
-
-async function getMarkerInfo(url) {
-  const info = await getCurrentTabInfo(url);
-  return info;
-}
-
-async function deleteMarker(url, scrollPos) {
-  const info = await getCurrentTabInfo(url);
-  if (!info.markers.length)
-    return new Promise((_, reject) =>
-      reject('No marker found when deleting marker')
-    );
-  if (!info.markers.includes(scrollPos))
-    return new Promise((_, reject) =>
-      reject('No marker with this view is found when deleting marker')
-    );
-
-  const updatedMarkersArr = info.markers.filter(
-    (marker) => marker !== scrollPos
-  );
-
-  await setCurrentTabInfo(url, false, updatedMarkersArr);
-  return new Promise((resolve) => resolve('Marker deleted successfully'));
-}
-
-async function clearAllMarkers(url) {
-  chrome.storage.local.remove(url);
-}
+import { Action } from './common/action.js';
+import { Marker } from './common/marker.js';
+import { Status } from './utils/status.js';
+import { Events } from './utils/events.js';
 
 chrome.runtime.onMessage.addListener((request, sender, reply) => {
-  if (request.messageType === 'getTab') {
-    reply({
-      status: 'success',
-      data: {
-        tab: sender.tab,
-      },
-    });
-  } else if (request.messageType === 'saveMarker') {
+  if (request.messageType === Events.saveMarker) {
     const pos = Math.floor(request.data.pos);
     const { url } = sender.tab;
-    saveMarker(url, pos)
-      .then(() =>
-        reply({
-          status: 'success',
-        })
-      )
+    Marker.save(url, pos)
+      .then((i) => {
+        return reply({
+          status: Status.success,
+        });
+      })
       .catch((err) =>
         reply({
-          status: 'fail',
+          status: Status.fail,
           error: err,
         })
       );
-  } else if (request.messageType === 'getMarkerInfo') {
+  } else if (request.messageType === Events.getMarkers) {
     const { url } = request.data;
-    getMarkerInfo(url)
+    Marker.get(url)
       .then((data) =>
         reply({
-          status: 'success',
+          status: Status.success,
           data,
         })
       )
       .catch((err) =>
         reply({
-          status: 'fail',
+          status: Status.fail,
           error: err,
         })
       );
-  } else if (request.messageType === 'deleteMarker') {
+  } else if (request.messageType === Events.deleteMarker) {
     const { url, scrollPos } = request.data;
-    deleteMarker(url, scrollPos)
+    Marker.delete(url, scrollPos)
       .then((data) =>
         reply({
-          status: 'success',
+          status: Status.success,
           data,
         })
       )
       .catch((err) =>
         reply({
-          status: 'fail',
+          status: Status.fail,
           error: err,
         })
       );
-  } else if (request.messageType === 'clearMarkers') {
+  } else if (request.messageType === Events.clearMarkers) {
     const { url } = request.data;
-    clearAllMarkers(url)
+    Marker.clearAll(url)
       .then((data) =>
         reply({
-          status: 'success',
+          status: Status.success,
           data,
         })
       )
       .catch((err) =>
         reply({
-          status: 'fail',
+          status: Status.fail,
           error: err,
         })
       );
+  } else {
+    reply({
+      status: Status.fail,
+      error: `No message found with type ${request.messageType}`,
+    });
   }
   return true;
 });
-
-async function sendMessage(type, data) {
-  const res = await chrome.runtime.sendMessage({
-    messageType: type,
-    data,
-  });
-  return res;
-}
 
 chrome.storage.onChanged.addListener((changes, area) => {
   console.log(changes);
   console.log(area);
   if (area !== 'local') return;
 
-  sendMessage('onChangedStorage', changes)
+  Action.sendMessage('onChangedStorage', changes)
     .then((res) => console.log(res))
     .catch((err) => console.error(err));
 });
